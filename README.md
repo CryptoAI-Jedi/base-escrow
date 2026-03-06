@@ -11,6 +11,8 @@ This project demonstrates a role-gated escrow flow with three actors:
 
 It includes deployment + interaction scripts, role switching via env files, and reproducible test flows.
 
+For quick setup and verification, see [HOW_TO_REPRODUCE.md](./HOW_TO_REPRODUCE.md) and [README_test_evidence.md](./README_test_evidence.md).
+
 ## Features
 
 - Escrow state machine with explicit transitions
