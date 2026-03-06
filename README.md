@@ -2,6 +2,12 @@
 ```markdown
 # Base Escrow (Vyper) — Role-Based Escrow on Base Sepolia
 
+## Project Highlights
+- Built a role-based escrow protocol in Vyper with Buyer, Seller, and Arbiter state-gated actions.
+- Deployed and tested end-to-end on Base Sepolia with reproducible CLI scripts and role switching.
+- Demonstrated both happy path (release) and dispute path (approve + refund) with on-chain tx evidence.
+- Designed for extensibility toward oracle-driven milestones and Chainlink-powered dispute automation.
+
 A minimal, production-style escrow smart contract built with **Vyper** and tested on **Base Sepolia**.  
 This project demonstrates a role-gated escrow flow with three actors:
 
