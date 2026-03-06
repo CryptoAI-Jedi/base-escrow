@@ -1,4 +1,4 @@
-# @version 0.4.0
+# @version 0.4.3
 """
 @title Simple Escrow Marketplace MVP
 @notice One escrow per contract instance:
@@ -7,8 +7,6 @@
         - buyer can refund only after arbiter approves refund
 @dev    Production-clean MVP with explicit state machine + reentrancy guard
 """
-
-from vyper.interfaces import ERC20  # not used now; reserved for future token escrow
 
 event Deposited:
     buyer: indexed(address)
@@ -43,12 +41,13 @@ event BuyerUpdated:
     new_buyer: indexed(address)
 
 
-enum Status:
-    AWAITING_DEPOSIT
-    FUNDED
-    RELEASED
-    REFUNDED
-    DISPUTED
+STATUS_AWAITING_DEPOSIT: constant(uint256) = 0
+STATUS_FUNDED: constant(uint256) = 1
+STATUS_RELEASED: constant(uint256) = 2 
+STATUS_REFUNDED: constant(uint256) = 3
+STATUS_DISPUTED: constant(uint256) = 4
+
+status: public(uint256)
 
 
 buyer: public(address)
@@ -56,7 +55,6 @@ seller: public(address)
 arbiter: public(address)
 
 amount: public(uint256)
-status: public(Status)
 
 lock: uint256  # simple nonReentrant lock
 
@@ -76,7 +74,7 @@ def __init__(_buyer: address, _seller: address, _arbiter: address):
     self.buyer = _buyer
     self.seller = _seller
     self.arbiter = _arbiter
-    self.status = Status.AWAITING_DEPOSIT
+    self.status = STATUS_AWAITING_DEPOSIT
 
 
 @internal
@@ -99,13 +97,13 @@ def deposit():
     self._nonreentrant_enter()
 
     assert msg.sender == self.buyer, "only buyer"
-    assert self.status == Status.AWAITING_DEPOSIT, "bad status"
+    assert self.status == STATUS_AWAITING_DEPOSIT, "bad status"
     assert msg.value > 0, "value=0"
 
     self.amount = msg.value
-    self.status = Status.FUNDED
+    self.status = STATUS_FUNDED
 
-    log Deposited(self.buyer, msg.value)
+    log Deposited(buyer=self.buyer, amount=msg.value)
 
     self._nonreentrant_exit()
 
@@ -115,11 +113,11 @@ def mark_dispute():
     """
     @notice Buyer or seller can mark escrow as disputed after funding.
     """
-    assert self.status == Status.FUNDED, "bad status"
+    assert self.status == STATUS_FUNDED, "bad status"
     assert msg.sender == self.buyer or msg.sender == self.seller, "unauthorized"
 
-    self.status = Status.DISPUTED
-    log Disputed(msg.sender)
+    self.status = STATUS_DISPUTED
+    log Disputed(by=msg.sender)
 
 
 @external
@@ -130,10 +128,10 @@ def approve_refund():
             Keeping minimal MVP: approval is signaled by status DISPUTED.
     """
     assert msg.sender == self.arbiter, "only arbiter"
-    assert self.status == Status.FUNDED or self.status == Status.DISPUTED, "bad status"
+    assert self.status == STATUS_FUNDED or self.status == STATUS_DISPUTED, "bad status"
 
-    self.status = Status.DISPUTED
-    log RefundApproved(msg.sender)
+    self.status = STATUS_DISPUTED
+    log RefundApproved(by=msg.sender)
 
 
 @external
@@ -144,17 +142,17 @@ def release():
     """
     self._nonreentrant_enter()
 
-    assert self.status == Status.FUNDED or self.status == Status.DISPUTED, "bad status"
+    assert self.status == STATUS_FUNDED or self.status == STATUS_DISPUTED, "bad status"
     assert msg.sender == self.buyer or msg.sender == self.arbiter, "unauthorized"
 
     amt: uint256 = self.amount
     assert amt > 0, "no funds"
 
     self.amount = 0
-    self.status = Status.RELEASED
+    self.status = STATUS_RELEASED
 
     send(self.seller, amt)
-    log Released(msg.sender, self.seller, amt)
+    log Released(by=msg.sender, to=self.seller, amount=amt)
 
     self._nonreentrant_exit()
 
@@ -168,17 +166,17 @@ def refund():
     """
     self._nonreentrant_enter()
 
-    assert self.status == Status.DISPUTED, "not disputed"
+    assert self.status == STATUS_DISPUTED, "not disputed"
     assert msg.sender == self.arbiter, "only arbiter"
 
     amt: uint256 = self.amount
     assert amt > 0, "no funds"
 
     self.amount = 0
-    self.status = Status.REFUNDED
+    self.status = STATUS_REFUNDED
 
     send(self.buyer, amt)
-    log Refunded(msg.sender, self.buyer, amt)
+    log Refunded(by=msg.sender, to=self.buyer, amount=amt)
 
     self._nonreentrant_exit()
 
@@ -188,21 +186,21 @@ def refund():
 @external
 def set_buyer(_buyer: address):
     assert msg.sender == self.arbiter, "only arbiter"
-    assert self.status == Status.AWAITING_DEPOSIT, "already funded"
+    assert self.status == STATUS_AWAITING_DEPOSIT, "already funded"
     assert _buyer != empty(address), "buyer=0"
     old: address = self.buyer
     self.buyer = _buyer
-    log BuyerUpdated(old, _buyer)
+    log BuyerUpdated(old_buyer=old, new_buyer=_buyer)
 
 
 @external
 def set_seller(_seller: address):
     assert msg.sender == self.arbiter, "only arbiter"
-    assert self.status == Status.AWAITING_DEPOSIT, "already funded"
+    assert self.status == STATUS_AWAITING_DEPOSIT, "already funded"
     assert _seller != empty(address), "seller=0"
     old: address = self.seller
     self.seller = _seller
-    log SellerUpdated(old, _seller)
+    log SellerUpdated(old_seller=old, new_seller=_seller)
 
 
 @external
@@ -211,4 +209,4 @@ def set_arbiter(_arbiter: address):
     assert _arbiter != empty(address), "arbiter=0"
     old: address = self.arbiter
     self.arbiter = _arbiter
-    log ArbiterUpdated(old, _arbiter)
+    log ArbiterUpdated(old_arbiter=old, new_arbiter=_arbiter)
