@@ -1,0 +1,20 @@
+name: dispute-opened-trigger
+type: event
+enabled: true
+
+source:
+  chain: evm
+  network: base-sepolia
+  chain_id: "${CHAIN_ID}"
+  contract_address: "${ESCROW_CONTRACT_ADDRESS}"
+
+event:
+  name: "DisputeOpened"
+  fields:
+    escrow_id: "escrowId"
+
+dispatch:
+  workflow: "dispute-resolution-workflow"
+  input:
+    mode: "single"
+    escrow_id: "${event.escrow_id}"
