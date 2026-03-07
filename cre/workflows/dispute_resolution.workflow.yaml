@@ -1,0 +1,50 @@
+name: dispute-resolution-workflow
+enabled: true
+
+inputs:
+  mode: string
+  escrow_id: string?
+
+steps:
+  - id: resolve
+    type: http_request
+    config:
+      method: POST
+      url: "${RESOLVER_BASE_URL}/resolve"
+      headers:
+        Content-Type: "application/json"
+        Authorization: "Bearer ${RESOLVER_API_TOKEN}"
+      body:
+        mode: "${inputs.mode}"
+        escrow_id: "${inputs.escrow_id}"
+
+  - id: guard_action
+    type: conditional
+    when: "${steps.resolve.response.should_submit_tx == true}"
+
+  - id: submit_tx
+    type: blockchain_transaction
+    depends_on: [guard_action]
+    config:
+      chain: evm
+      network: base-sepolia
+      chain_id: "${CHAIN_ID}"
+      rpc_url: "${RPC_URL}"
+      contract_address: "${ESCROW_CONTRACT_ADDRESS}"
+      signer_private_key: "${RESOLVER_SIGNER_PRIVATE_KEY}"
+      method: "${steps.resolve.response.action}"   # expected: RELEASE or REFUND
+      args:
+        escrow_id: "${steps.resolve.response.escrow_id}"
+        reason_code: "${steps.resolve.response.reason_code}"
+
+  - id: trace
+    type: log
+    config:
+      level: info
+      message: "resolution_result"
+      fields:
+        escrow_id: "${steps.resolve.response.escrow_id}"
+        action: "${steps.resolve.response.action}"
+        reason_code: "${steps.resolve.response.reason_code}"
+        tx_hash: "${steps.submit_tx.tx_hash}"
+        mode: "${inputs.mode}"

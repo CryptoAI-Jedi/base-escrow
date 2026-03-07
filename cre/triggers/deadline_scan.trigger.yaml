@@ -1,0 +1,11 @@
+name: deadline-scan-trigger
+type: schedule
+enabled: true
+
+schedule:
+  every: "60s"
+
+dispatch:
+  workflow: "dispute-resolution-workflow"
+  input:
+    mode: "scan"

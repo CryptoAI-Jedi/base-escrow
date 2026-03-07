@@ -1,0 +1,15 @@
+[
+  {"type":"function","name":"status","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"uint256"}]},
+  {"type":"function","name":"buyer","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"address"}]},
+  {"type":"function","name":"seller","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"address"}]},
+  {"type":"function","name":"arbiter","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"address"}]},
+  {"type":"function","name":"amount","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"uint256"}]},
+  {"type":"function","name":"deposit","stateMutability":"payable","inputs":[],"outputs":[]},
+  {"type":"function","name":"mark_dispute","stateMutability":"nonpayable","inputs":[],"outputs":[]},
+  {"type":"function","name":"approve_refund","stateMutability":"nonpayable","inputs":[],"outputs":[]},
+  {"type":"function","name":"release","stateMutability":"nonpayable","inputs":[],"outputs":[]},
+  {"type":"function","name":"refund","stateMutability":"nonpayable","inputs":[],"outputs":[]},
+  {"type":"function","name":"set_buyer","stateMutability":"nonpayable","inputs":[{"name":"_buyer","type":"address"}],"outputs":[]},
+  {"type":"function","name":"set_seller","stateMutability":"nonpayable","inputs":[{"name":"_seller","type":"address"}],"outputs":[]},
+  {"type":"function","name":"set_arbiter","stateMutability":"nonpayable","inputs":[{"name":"_arbiter","type":"address"}],"outputs":[]}
+]
