@@ -3,6 +3,7 @@ from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel
 from src.chain_client import get_open_escrows
 from src.policy import evaluate_policy
+from src.ai_assessor import assess_dispute
 
 app = FastAPI()
 API_TOKEN = os.getenv("RESOLVER_API_TOKEN", "")
@@ -31,15 +32,30 @@ def resolve(req: ResolveRequest, authorization: str = Header(default="")):
             "should_submit_tx": False
         }
 
-    # MVP: resolve first matching escrow
+    # Deterministic policy decision — always authoritative
     e = escrows[0]
     d = evaluate_policy(e)
-    return {
+
+    response = {
         "escrow_id": e.escrow_id,
         "action": d.action,
         "reason_code": d.reason_code,
-        "should_submit_tx": d.should_submit_tx
+        "should_submit_tx": d.should_submit_tx,
     }
+
+    # AI-assisted assessment — advisory only, never overrides the policy decision
+    ai_assessment = assess_dispute(
+        escrow_id=e.escrow_id,
+        status=e.status,
+        buyer=e.buyer,
+        seller=e.seller,
+        action=d.action,
+        reason_code=d.reason_code,
+    )
+    if ai_assessment:
+        response["ai_assessment"] = ai_assessment
+
+    return response
 
 @app.get("/health")
 def health():

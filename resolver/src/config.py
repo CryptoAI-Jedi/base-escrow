@@ -48,6 +48,9 @@ RESOLVER_API_TOKEN = _get_optional("RESOLVER_API_TOKEN", "")
 RESOLVER_SIGNER_PRIVATE_KEY = _get_optional("RESOLVER_SIGNER_PRIVATE_KEY", "")
 RESOLVER_SIGNER_ADDRESS = _get_optional("RESOLVER_SIGNER_ADDRESS", "")
 
+# AI assessor
+ANTHROPIC_API_KEY = _get_optional("ANTHROPIC_API_KEY", "")
+
 # Optional
 POLL_INTERVAL_SECONDS = int(_get_optional("POLL_INTERVAL_SECONDS", "30"))
 LOG_LEVEL = _get_optional("LOG_LEVEL", "INFO")
