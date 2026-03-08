@@ -62,6 +62,19 @@ def assess_dispute(
         )
 
         raw = message.content[0].text.strip()
+
+        # Strip markdown code fences if Claude wrapped the response
+        if raw.startswith("```"):
+            lines = raw.splitlines()
+            raw = "\n".join(
+                line for line in lines
+                if not line.strip().startswith("```")
+            ).strip()
+
+        if not raw:
+            print("[AI] Empty response from model, skipping")
+            return None
+
         assessment = json.loads(raw)
 
         required_keys = {"classification", "policy_alignment", "rationale"}
