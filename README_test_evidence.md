@@ -3,7 +3,7 @@
 #### Deployment Info
 - **Network:** Base Sepolia (`chainId: 84532`)
 - **Contract:** `Escrow.vy` (Vyper `0.4.3`)
-- **Latest deployed address:** `0xD7652A0e28085d0565af4B2F0b2f6901499042F8`
+- **Latest deployed address:** `0x5f8BC1432DaE54277945951f03DfAA4046990C51`
 - **Previous deployed address:** `0x6BA7B788322A703104f139aa0bA38D38048f7CE7`
 - **Role addresses:**
   - Buyer: `0x45FEB305467ee1130Ae6049B4a4C8B798Fa2d2B4`
