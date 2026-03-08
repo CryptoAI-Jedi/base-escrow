@@ -75,19 +75,21 @@ In the current MVP, **opening a dispute does not let the buyer unilaterally with
 
 ### Live Demo Evidence
 
-Contract: `0xD7652A0e28085d0565af4B2F0b2f6901499042F8` (Base Sepolia)
+Contract: `0x9ff0c475EDB2Cbba77eCc0B6dFDd479f398b8360` (Base Sepolia)
+
+**Demo Video:** [Loom — Base Escrow CRE Dispute Resolution](https://www.loom.com/share/64ff611cd8d74a45b04bdd49f22fbf1f)
 
 | Step | Actor | Tx Hash | Result |
 |---|---|---|---|
 | Deploy | Arbiter | *(session)* | `AWAITING_DEPOSIT` |
 | Deposit | Buyer | *(session)* | `FUNDED` |
 | Dispute | Seller | *(session)* | `DISPUTED` |
-| CRE Resolver Refund | Resolver | `0xa214c58c25e291bb7b14e3329a4a42da12461d1067ba12ebf6068e3792260548` | `REFUNDED` |
+| CRE Resolver Refund | Resolver | *(see README_test_evidence.md)* | `REFUNDED` |
 
 **Resolver API response (with AI assessment):**
 ```json
 {
-  "escrow_id": "0xD7652A0e28085d0565af4B2F0b2f6901499042F8",
+  "escrow_id": "0x9ff0c475EDB2Cbba77eCc0B6dFDd479f398b8360",
   "action": "REFUND",
   "reason_code": "DISPUTED_ARBITER_REFUND",
   "should_submit_tx": true,

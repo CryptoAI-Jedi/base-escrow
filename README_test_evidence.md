@@ -3,8 +3,8 @@
 #### Deployment Info
 - **Network:** Base Sepolia (`chainId: 84532`)
 - **Contract:** `Escrow.vy` (Vyper `0.4.3`)
-- **Latest deployed address:** `0x5f8BC1432DaE54277945951f03DfAA4046990C51`
-- **Previous deployed address:** `0x6BA7B788322A703104f139aa0bA38D38048f7CE7`
+- **Latest deployed address:** `0x9ff0c475EDB2Cbba77eCc0B6dFDd479f398b8360`
+- **Previous deployed address:** `0x5f8BC1432DaE54277945951f03DfAA4046990C51`
 - **Role addresses:**
   - Buyer: `0x45FEB305467ee1130Ae6049B4a4C8B798Fa2d2B4`
   - Seller: `0x6A18650859bb60631C940C03353C8EE9554A3790`
@@ -23,6 +23,21 @@
 ./switch-role.sh seller
 ./switch-role.sh arbiter
 ```
+
+---
+
+#### Loom Demo Run (2026-03-08) — Hackathon Submission Recording
+
+**Demo Video:** [Loom — Base Escrow CRE Dispute Resolution](https://www.loom.com/share/64ff611cd8d74a45b04bdd49f22fbf1f)
+
+**Contract:** `0x9ff0c475EDB2Cbba77eCc0B6dFDd479f398b8360` (Base Sepolia)
+
+| Step | Actor | Action | Tx Hash | Status | Resulting State |
+|---|---|---|---|---|---|
+| Deploy | Arbiter | `deploy.py` | *(session)* | `1` | `AWAITING_DEPOSIT` |
+| Deposit | Buyer | `deposit --eth 0.0001` | *(session)* | `1` | `FUNDED` |
+| Mark Dispute | Seller | `mark_dispute` | *(session)* | `1` | `DISPUTED` |
+| CRE Resolver | Resolver API + `src.main` | `refund()` via web3 | `8611ea6cf4c16060eec61b67ec01748ff608cc47b31c54e6a82df74754872fdb` | `1` | `REFUNDED` |
 
 ---
 
