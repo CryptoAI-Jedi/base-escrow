@@ -101,7 +101,7 @@ Contract: `0x9ff0c475EDB2Cbba77eCc0B6dFDd479f398b8360` (Base Sepolia)
 }
 ```
 
-Full evidence: [README_test_evidence.md](./README_test_evidence.md)
+Full evidence: [README_test_evidence.md](./docs/archive/hackathon/README_test_evidence.md)
 
 ---
 
@@ -226,7 +226,7 @@ cd base-escrow
 pip install web3 vyper python-dotenv
 ```
 
-Create role env files (`env.buyer`, `env.seller`, `env.arbiter`) — see [HOW_TO_REPRODUCE.md](./HOW_TO_REPRODUCE.md).
+Create role env files (`env.buyer`, `env.seller`, `env.arbiter`) — see [HOW_TO_REPRODUCE.md](./docs/archive/hackathon/HOW_TO_REPRODUCE.md).
 
 ### 3. Resolver service
 
