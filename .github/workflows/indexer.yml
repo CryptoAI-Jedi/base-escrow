@@ -1,0 +1,35 @@
+name: indexer
+
+on:
+  push:
+    branches: [main]
+    paths: ["indexer/**", ".github/workflows/indexer.yml"]
+  pull_request:
+    paths: ["indexer/**", ".github/workflows/indexer.yml"]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: indexer
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: indexer/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Codegen
+        run: npm run codegen
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
