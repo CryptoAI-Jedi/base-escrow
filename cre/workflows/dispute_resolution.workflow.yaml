@@ -22,6 +22,10 @@ steps:
     type: conditional
     when: "${steps.resolve.response.should_submit_tx == true}"
 
+  # The resolver returns an explicit contract-call descriptor:
+  #   method: "resolveRelease" | "resolveRefund"
+  #   args:   { escrowId: <uint256>, reasonCode: <bytes32 hex> }
+  # consumed verbatim — no name/arg mapping happens in this workflow.
   - id: submit_tx
     type: blockchain_transaction
     depends_on: [guard_action]
@@ -30,12 +34,12 @@ steps:
       network: base-sepolia
       chain_id: "${CHAIN_ID}"
       rpc_url: "${RPC_URL}"
-      contract_address: "${ESCROW_CONTRACT_ADDRESS}"
+      contract_address: "${ESCROW_MARKET_ADDRESS}"
       signer_private_key: "${RESOLVER_SIGNER_PRIVATE_KEY}"
-      method: "${steps.resolve.response.action}"   # expected: RELEASE or REFUND
+      method: "${steps.resolve.response.method}"
       args:
-        escrow_id: "${steps.resolve.response.escrow_id}"
-        reason_code: "${steps.resolve.response.reason_code}"
+        escrowId: "${steps.resolve.response.args.escrowId}"
+        reasonCode: "${steps.resolve.response.args.reasonCode}"
 
   - id: trace
     type: log

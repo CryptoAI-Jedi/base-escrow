@@ -6,15 +6,19 @@ source:
   chain: evm
   network: base-sepolia
   chain_id: "${CHAIN_ID}"
-  contract_address: "${ESCROW_CONTRACT_ADDRESS}"
+  contract_address: "${ESCROW_MARKET_ADDRESS}"
 
+# EscrowMarket.sol emits:
+#   DisputeOpened(uint256 indexed escrowId, address indexed by,
+#                 string evidenceCID, uint64 sellerResponseDeadline)
 event:
-  name: "Disputed"
+  name: "DisputeOpened"
   fields:
+    escrowId: "escrowId"
     by: "by"
 
 dispatch:
   workflow: "dispute-resolution-workflow"
   input:
     mode: "single"
-    escrow_id: "${source.contract_address}"
+    escrow_id: "${event.escrowId}"
