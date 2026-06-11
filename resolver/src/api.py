@@ -11,6 +11,13 @@ from src.policy import evaluate_policy
 
 app = FastAPI()
 
+try:
+    from prometheus_fastapi_instrumentator import Instrumentator
+
+    Instrumentator().instrument(app).expose(app)  # GET /metrics
+except ImportError:
+    print("[WARN] prometheus_fastapi_instrumentator not installed; /metrics disabled")
+
 
 class ResolveRequest(BaseModel):
     mode: str  # "single" | "scan"

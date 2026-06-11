@@ -1,0 +1,78 @@
+groups:
+  - name: escrow-resolver
+    rules:
+      - alert: ResolverDown
+        expr: up{job="escrow-resolver"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Escrow resolver is down"
+          description: "The resolver API has been unreachable for 5 minutes. CRE dispute resolution is stalled; buyers can still self-release on-chain."
+
+      - alert: ResolverHighErrorRate
+        expr: |
+          sum(rate(http_requests_total{job="escrow-resolver", handler="/resolve", status=~"5.."}[5m]))
+            / clamp_min(sum(rate(http_requests_total{job="escrow-resolver", handler="/resolve"}[5m])), 1e-9)
+          > 0.05
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Resolver /resolve error rate above 5%"
+          description: "More than 5% of /resolve calls are failing over the last 5 minutes."
+
+      - alert: ResolverSlowDecisions
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket{job="escrow-resolver", handler="/resolve"}[10m])) by (le))
+          > 10
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Resolver p95 decision latency above 10s"
+          description: "Slow decisions delay CRE workflow ticks; check RPC and IPFS gateway latency."
+
+  - name: escrow-indexer
+    rules:
+      - alert: IndexerDown
+        expr: up{job="escrow-indexer"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Ponder indexer is down"
+          description: "Marketplace UI and resolver discovery degrade to chain-scan fallback."
+
+      - alert: IndexerBlockLag
+        expr: (ponder_sync_block{job="escrow-indexer"} offset 5m) == ponder_sync_block{job="escrow-indexer"}
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Indexer sync height stalled"
+          description: "The indexer's synced block height has not advanced for 10+ minutes (Base Sepolia produces blocks every ~2s)."
+
+  - name: escrow-protocol
+    rules:
+      # Exported by the indexer or a small exporter reading Ponder's DB; a
+      # dispute past its seller-response window should be resolved within an
+      # hour by the deadline-scan workflow.
+      - alert: StuckDisputes
+        expr: escrow_disputes_past_response_deadline > 0
+        for: 1h
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disputed escrows stuck past seller-response deadline"
+          description: "At least one DISPUTED escrow has been past its seller-response deadline for over an hour without resolution. Check CRE workflow runs and the resolver."
+
+      - alert: ResolverSignerLowBalance
+        expr: escrow_resolver_signer_balance_wei < 5e15  # 0.005 ETH gas floor
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Resolver signer balance below gas floor"
+          description: "The CRE/resolver signer wallet is low on Base Sepolia ETH and will soon fail to submit resolutions."

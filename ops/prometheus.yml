@@ -1,0 +1,28 @@
+# Prometheus config for Base Escrow marketplace operations.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 30s
+
+rule_files:
+  - alerts/escrow_alerts.yml
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: node
+    static_configs:
+      - targets: ["localhost:9100"]
+
+  # Resolver FastAPI service (prometheus-fastapi-instrumentator)
+  - job_name: escrow-resolver
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["localhost:8080"]
+
+  # Ponder indexer exposes /metrics by default
+  - job_name: escrow-indexer
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["localhost:42069"]
