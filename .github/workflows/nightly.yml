@@ -1,0 +1,22 @@
+name: nightly-deep-tests
+
+on:
+  schedule:
+    - cron: "17 3 * * *" # 03:17 UTC daily
+  workflow_dispatch: {}
+
+jobs:
+  deep-fuzz:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Deep fuzz + invariants
+        run: FOUNDRY_PROFILE=nightly forge test

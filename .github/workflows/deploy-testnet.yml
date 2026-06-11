@@ -1,0 +1,57 @@
+name: deploy-testnet
+
+# Manual-only deployment to Base Sepolia. Mainnet is intentionally not wired
+# up (see PLAN.md decision i).
+on:
+  workflow_dispatch:
+    inputs:
+      seed_listings:
+        description: "Also run SeedListings.s.sol after deploy"
+        type: boolean
+        default: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: base-sepolia # gate behind a reviewed environment + secrets
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Deploy EscrowMarket
+        env:
+          RPC_URL: ${{ secrets.BASE_SEPOLIA_RPC_URL }}
+          BASESCAN_API_KEY: ${{ secrets.BASESCAN_API_KEY }}
+          DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+          RESOLVER_ADDRESS: ${{ vars.RESOLVER_ADDRESS }}
+          TREASURY_ADDRESS: ${{ vars.TREASURY_ADDRESS }}
+          USDC_ADDRESS: ${{ vars.USDC_ADDRESS }}
+        run: |
+          forge script script/Deploy.s.sol \
+            --rpc-url "$RPC_URL" \
+            --private-key "$DEPLOYER_PRIVATE_KEY" \
+            --broadcast --verify
+
+      - name: Seed demo listings
+        if: ${{ inputs.seed_listings }}
+        env:
+          RPC_URL: ${{ secrets.BASE_SEPOLIA_RPC_URL }}
+          DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+        run: |
+          export ESCROW_MARKET_ADDRESS=$(python3 -c "import json; print(json.load(open('deployments/84532.json'))['escrowMarket'])")
+          forge script script/SeedListings.s.sol \
+            --rpc-url "$RPC_URL" \
+            --private-key "$DEPLOYER_PRIVATE_KEY" \
+            --broadcast
+
+      - name: Upload deployment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-84532
+          path: contracts/deployments/84532.json
