@@ -19,9 +19,7 @@ contract SeedListings is Script {
         // Placeholder CIDs — replace with real pinned metadata when seeding
         // for the demo UI.
         vm.startBroadcast();
-        market.createListing(
-            address(0), 0.001 ether, keccak256("electronics"), "bafkreidemoelectronics"
-        );
+        market.createListing(address(0), 0.001 ether, keccak256("electronics"), "bafkreidemoelectronics");
         market.createListing(address(0), 0.0005 ether, keccak256("collectibles"), "bafkreidemocollectible");
         market.createListing(address(0), 0.002 ether, keccak256("services"), "bafkreidemoservice");
         vm.stopBroadcast();
