@@ -2,8 +2,10 @@
 Configuration module - loads environment variables from .env files.
 This module MUST be imported before any other resolver modules that need env vars.
 """
+
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Get absolute path to the config directory, regardless of working directory
@@ -22,15 +24,10 @@ if _env_file.exists():
 elif _env_example.exists():
     load_dotenv(_env_example, override=True)
 
-# Export config values with validation
-def _get_required(key: str) -> str:
-    val = os.getenv(key, "")
-    if not val:
-        raise ValueError(f"Missing required environment variable: {key}")
-    return val
 
 def _get_optional(key: str, default: str = "") -> str:
     return os.getenv(key, default)
+
 
 # Network config
 NETWORK_NAME = _get_optional("NETWORK_NAME", "base-sepolia")
@@ -38,15 +35,23 @@ CHAIN_ID = int(_get_optional("CHAIN_ID", "84532"))
 RPC_URL = _get_optional("RPC_URL", "")
 
 # Contract config
-ESCROW_CONTRACT_ADDRESS = _get_optional("ESCROW_CONTRACT_ADDRESS", "")
+ESCROW_MARKET_ADDRESS = _get_optional("ESCROW_MARKET_ADDRESS", "")
+
+# Indexer (discovery only; chain reads are authoritative)
+PONDER_GRAPHQL_URL = _get_optional("PONDER_GRAPHQL_URL", "http://127.0.0.1:42069/graphql")
+
+# IPFS gateway for evidence fetches
+IPFS_GATEWAY_URL = _get_optional("IPFS_GATEWAY_URL", "https://gateway.pinata.cloud")
 
 # Resolver API config
 RESOLVER_BASE_URL = _get_optional("RESOLVER_BASE_URL", "http://127.0.0.1:8080")
 RESOLVER_API_TOKEN = _get_optional("RESOLVER_API_TOKEN", "")
 
-# Signer config
+# Signer config — used ONLY by the dev submission harness; CRE owns
+# production submission.
 RESOLVER_SIGNER_PRIVATE_KEY = _get_optional("RESOLVER_SIGNER_PRIVATE_KEY", "")
 RESOLVER_SIGNER_ADDRESS = _get_optional("RESOLVER_SIGNER_ADDRESS", "")
+RESOLVER_SUBMIT_ENABLED = _get_optional("RESOLVER_SUBMIT_ENABLED", "false").lower() == "true"
 
 # AI assessor
 ANTHROPIC_API_KEY = _get_optional("ANTHROPIC_API_KEY", "")
@@ -61,10 +66,8 @@ def validate_chain_config():
     missing = []
     if not RPC_URL:
         missing.append("RPC_URL")
-    if not ESCROW_CONTRACT_ADDRESS:
-        missing.append("ESCROW_CONTRACT_ADDRESS")
-    if not RESOLVER_SIGNER_PRIVATE_KEY:
-        missing.append("RESOLVER_SIGNER_PRIVATE_KEY")
-    
+    if not ESCROW_MARKET_ADDRESS:
+        missing.append("ESCROW_MARKET_ADDRESS")
+
     if missing:
         raise ValueError(f"Missing required env vars: {', '.join(missing)}")

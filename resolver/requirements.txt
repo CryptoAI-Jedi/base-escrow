@@ -5,3 +5,4 @@ fastapi
 uvicorn
 web3
 anthropic
+prometheus-fastapi-instrumentator
